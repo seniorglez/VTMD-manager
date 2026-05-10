@@ -81,6 +81,11 @@ function renderDiscipline(attrs: Attrs, _raw: string): string {
   return `<div class="vtmd-discipline"><span class="vtmd-discipline-name">${attrs['name'] ?? ''}</span> <span class="vtmd-discipline-dots">${dots(level)}</span></div>`
 }
 
+function renderAbility(attrs: Attrs, _raw: string): string {
+  const level = parseInt(attrs['level'] ?? '0', 10)
+  return `<div class="vtmd-ability"><span class="vtmd-ability-name">${attrs['name'] ?? ''}</span> <span class="vtmd-ability-dots">${dots(level)}</span></div>`
+}
+
 function renderAttributes(attrs: Attrs, _raw: string): string {
   const attrList = ['strength', 'dexterity', 'stamina', 'charisma', 'manipulation', 'appearance', 'perception', 'intelligence', 'wits']
   const rows = attrList
@@ -230,6 +235,7 @@ export class VtmdParserService {
       makeBlockExt('roll',             renderRoll),
       makeBlockExt('blood',            renderBlood),
       makeBlockExt('discipline',       renderDiscipline),
+      makeBlockExt('ability',          renderAbility),
       makeBlockExt('attributes',       renderAttributes),
       makeBlockExt('character-header', renderCharacterHeader),
       makeBlockExt('npc-header',       renderNpcHeader),
@@ -249,6 +255,7 @@ export class VtmdParserService {
 
     const inlineExts = [
       makeInlineExt('discipline', renderDiscipline),
+      makeInlineExt('ability',    renderAbility),
       makeInlineExt('blood',      renderBlood),
       makeInlineExt('willpower',  renderWillpower),
       makeInlineExt('morality',   renderMorality),

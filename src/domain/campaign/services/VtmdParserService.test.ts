@@ -258,6 +258,41 @@ describe('::experience tag', () => {
   })
 })
 
+describe('::ability tag', () => {
+  it('renders class, name and dots standalone', () => {
+    const html = parser.render('::ability[name="Alertness" level=3]')
+    expect(html).toContain('class="vtmd-ability"')
+    expect(html).toContain('Alertness')
+    expect(html).toContain('●●●○○')
+  })
+
+  it('level=0 renders five empty dots', () => {
+    const html = parser.render('::ability[name="Brawl" level=0]')
+    expect(html).toContain('○○○○○')
+  })
+
+  it('level=5 renders five filled dots', () => {
+    const html = parser.render('::ability[name="Expression" level=5]')
+    expect(html).toContain('●●●●●')
+  })
+
+  it('renders inline inside a table cell', () => {
+    const html = parser.render('| H |\n|---|\n| ::ability[name="Alertness" level=3] |')
+    expect(html).toContain('<td>')
+    expect(html).toContain('class="vtmd-ability"')
+    expect(html).toContain('Alertness')
+  })
+
+  it('coexists with ::discipline in the same table without interference', () => {
+    const input = '| A | B |\n|---|---|\n| ::ability[name="Brawl" level=2] | ::discipline[name="Potence" level=3] |'
+    const html = parser.render(input)
+    expect(html).toContain('class="vtmd-ability"')
+    expect(html).toContain('Brawl')
+    expect(html).toContain('class="vtmd-discipline"')
+    expect(html).toContain('Potence')
+  })
+})
+
 describe('inline tags in table cells', () => {
   const inTable = (cell: string) => `| Header |\n|---|\n| ${cell} |`
 

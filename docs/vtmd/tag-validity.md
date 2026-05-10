@@ -12,6 +12,7 @@ Not all tags are valid in all document types. The parser will raise a `VtmdError
 | `::roll` | — | — | ✅ | — | — |
 | `::secret` | — | — | ✅ | — | ✅ |
 | `::blood` | — | — | ✅ | ✅ | — |
+| `::ability` | — | — | ✅ | ✅ | — |
 | `::discipline` | — | — | — | ✅ | — |
 | `::attributes` | — | — | — | ✅ | — |
 | `::character-header` | — | — | — | ✅ | — |

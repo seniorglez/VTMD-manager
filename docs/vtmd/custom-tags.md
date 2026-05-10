@@ -98,6 +98,21 @@ In `vtmd:chapter` requires a `ref` to identify the character:
 
 ---
 
+## `::ability`
+
+Renders a single ability entry with name and dot rating. Registers as both block and inline, so it can appear standalone or inside a Markdown table cell. Used in `vtmd:character` and `vtmd:chapter`.
+
+```
+::ability[name="Alertness" level=3]
+```
+
+| Attribute | Required | Values |
+|---|---|---|
+| `name` | ✅ | Any string |
+| `level` | ✅ | Integer 0–5 |
+
+---
+
 ## `::discipline`
 
 Renders a discipline entry with dot rating. Used in `vtmd:character`.
