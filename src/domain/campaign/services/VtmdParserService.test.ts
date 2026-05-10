@@ -257,3 +257,55 @@ describe('::experience tag', () => {
     expect(html).toContain('3')
   })
 })
+
+describe('inline tags in table cells', () => {
+  const inTable = (cell: string) => `| Header |\n|---|\n| ${cell} |`
+
+  it('::discipline inline renders inside a table cell', () => {
+    const html = parser.render(inTable('::discipline[name="Potence" level=3]'))
+    expect(html).toContain('<td>')
+    expect(html).toContain('class="vtmd-discipline"')
+    expect(html).toContain('Potence')
+    expect(html).toContain('●●●')
+  })
+
+  it('::blood inline renders inside a table cell', () => {
+    const html = parser.render(inTable('::blood[current=7 max=10]'))
+    expect(html).toContain('<td>')
+    expect(html).toContain('class="vtmd-blood"')
+    expect(html).toContain('7/10')
+  })
+
+  it('::willpower inline renders inside a table cell', () => {
+    const html = parser.render(inTable('::willpower[current=6 max=8]'))
+    expect(html).toContain('<td>')
+    expect(html).toContain('class="vtmd-willpower"')
+    expect(html).toContain('6/8')
+  })
+
+  it('::morality inline renders inside a table cell', () => {
+    const html = parser.render(inTable('::morality[path="Humanity" rating=7]'))
+    expect(html).toContain('<td>')
+    expect(html).toContain('class="vtmd-morality"')
+    expect(html).toContain('Humanity')
+  })
+
+  it('::roll inline renders inside a table cell', () => {
+    const html = parser.render(inTable('::roll[attribute="Per + Sub" difficulty=7 pool=5]'))
+    expect(html).toContain('<td>')
+    expect(html).toContain('class="vtmd-roll"')
+    expect(html).toContain('Pool 5')
+  })
+
+  it('::secret inline renders inside a table cell', () => {
+    const html = parser.render(inTable('::secret[Hidden info]'))
+    expect(html).toContain('<td>')
+    expect(html).toContain('class="vtmd-secret"')
+    expect(html).toContain('Hidden info')
+  })
+
+  it('unknown tag is passed through as text without crashing', () => {
+    const html = parser.render('::unknowntag[x="1"]')
+    expect(html).toContain('::unknowntag')
+  })
+})
