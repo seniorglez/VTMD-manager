@@ -78,12 +78,14 @@ function renderBlood(attrs: Attrs, _raw: string): string {
 
 function renderDiscipline(attrs: Attrs, _raw: string): string {
   const level = parseInt(attrs['level'] ?? '0', 10)
-  return `<div class="vtmd-discipline"><span class="vtmd-discipline-name">${attrs['name'] ?? ''}</span> <span class="vtmd-discipline-dots">${dots(level)}</span></div>`
+  const name = attrs['name'] ?? ''
+  return `<div class="vtmd-discipline" data-vtmd-dice="${level}" data-vtmd-label="${name}"><span class="vtmd-discipline-name">${name}</span> <span class="vtmd-discipline-dots">${dots(level)}</span></div>`
 }
 
 function renderAbility(attrs: Attrs, _raw: string): string {
   const level = parseInt(attrs['level'] ?? '0', 10)
-  return `<div class="vtmd-ability"><span class="vtmd-ability-name">${attrs['name'] ?? ''}</span> <span class="vtmd-ability-dots">${dots(level)}</span></div>`
+  const name = attrs['name'] ?? ''
+  return `<div class="vtmd-ability" data-vtmd-dice="${level}" data-vtmd-label="${name}"><span class="vtmd-ability-name">${name}</span> <span class="vtmd-ability-dots">${dots(level)}</span></div>`
 }
 
 function renderAttributes(attrs: Attrs, _raw: string): string {
@@ -91,7 +93,8 @@ function renderAttributes(attrs: Attrs, _raw: string): string {
   const rows = attrList
     .map(a => {
       const val = parseInt(attrs[a] ?? '1', 10)
-      return `<tr><td>${a.charAt(0).toUpperCase() + a.slice(1)}</td><td>${dots(val)}</td></tr>`
+      const label = a.charAt(0).toUpperCase() + a.slice(1)
+      return `<tr data-vtmd-dice="${val}" data-vtmd-label="${label}"><td>${label}</td><td>${dots(val)}</td></tr>`
     })
     .join('')
   return `<div class="vtmd-attributes"><table>${rows}</table></div>`

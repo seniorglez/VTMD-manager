@@ -344,3 +344,31 @@ describe('inline tags in table cells', () => {
     expect(html).toContain('::unknowntag')
   })
 })
+
+describe('data-vtmd-dice attributes for dice pool', () => {
+  it('::ability carries data-vtmd-dice and data-vtmd-label', () => {
+    const html = parser.render('::ability[name="Alertness" level=3]')
+    expect(html).toContain('data-vtmd-dice="3"')
+    expect(html).toContain('data-vtmd-label="Alertness"')
+  })
+
+  it('::ability with level=0 still carries data-vtmd-dice="0"', () => {
+    const html = parser.render('::ability[name="Brawl" level=0]')
+    expect(html).toContain('data-vtmd-dice="0"')
+    expect(html).toContain('data-vtmd-label="Brawl"')
+  })
+
+  it('::discipline carries data-vtmd-dice and data-vtmd-label', () => {
+    const html = parser.render('::discipline[name="Potence" level=2]')
+    expect(html).toContain('data-vtmd-dice="2"')
+    expect(html).toContain('data-vtmd-label="Potence"')
+  })
+
+  it('::attributes carries data-vtmd-dice and data-vtmd-label on each row', () => {
+    const html = parser.render('::attributes[strength=4 dexterity=3 stamina=2 charisma=1 manipulation=1 appearance=1 perception=1 intelligence=1 wits=1]')
+    expect(html).toContain('data-vtmd-dice="4"')
+    expect(html).toContain('data-vtmd-label="Strength"')
+    expect(html).toContain('data-vtmd-dice="3"')
+    expect(html).toContain('data-vtmd-label="Dexterity"')
+  })
+})

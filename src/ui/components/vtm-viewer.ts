@@ -241,6 +241,12 @@ export class VtmViewer extends LitElement {
       color: #6b5e4e;
       margin-top: 2px;
     }
+    /* ── Dice-pool clickable elements ── */
+    article [data-vtmd-dice] {
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    article [data-vtmd-dice]:hover { opacity: 0.65; }
     /* ── VTMD npc block ── */
     article .vtmd-npc {
       border-left: 3px solid #2a2a2a;
@@ -353,6 +359,20 @@ export class VtmViewer extends LitElement {
     this.draftContent = (e.target as HTMLTextAreaElement).value
   }
 
+  private _onArticleClick(e: MouseEvent) {
+    const target = (e.composedPath() as Element[]).find(
+      el => el instanceof HTMLElement && el.dataset['vtmdDice'] !== undefined
+    ) as HTMLElement | undefined
+    if (!target) return
+    const value = parseInt(target.dataset['vtmdDice']!, 10)
+    const label = target.dataset['vtmdLabel'] ?? ''
+    this.dispatchEvent(new CustomEvent('vtm-add-dice', {
+      detail: { label, value },
+      bubbles: true,
+      composed: true,
+    }))
+  }
+
   private get _hasUnsavedChanges() {
     return this.draftContent !== this.originalContent
   }
@@ -405,7 +425,7 @@ export class VtmViewer extends LitElement {
               </details>` : ''}
           ` : ''}
           ${this.renderedHtml
-            ? html`<article>${unsafeHTML(this.renderedHtml)}</article>`
+            ? html`<article @click=${this._onArticleClick}>${unsafeHTML(this.renderedHtml)}</article>`
             : html`<p class="empty">Selecciona un fichero para visualizarlo.</p>`}
         </div>
       `}
