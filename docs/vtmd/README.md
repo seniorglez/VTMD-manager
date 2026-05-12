@@ -14,8 +14,8 @@ VTMD is an extension of standard Markdown designed for managing Vampire: The Mas
 ## Quick Reference
 
 ```
-# vtmd:character    — player or NPC character sheet
-# vtmd:npc          — non-player character (lightweight)
+# vtmd:character    — player character (PC) full stat block
+# vtmd:npc          — non-player character (NPC) full stat block
 # vtmd:chapter      — chapter within a module
 # vtmd:module       — a self-contained story module
 # vtmd:campaign     — top-level campaign descriptor
@@ -40,6 +40,17 @@ Some tags are registered as both **block** and **inline** extensions. Block tags
 ```
 
 Inline-capable tags: `::ability` `::discipline` `::blood` `::willpower` `::morality` `::roll` `::npc` `::secret` `::weakness` `::experience`
+
+## Internal links
+
+VTMD documents can link to each other using standard Markdown link syntax with relative paths:
+
+```markdown
+See the sheet for [Viktor Kazakov](./characters/viktor.vtmd).
+Continue in [Chapter 2](../cap-02-la-pista.vtmd).
+```
+
+Clicking an internal link in the viewer opens the target document in a new tab. Paths are resolved relative to the current document's directory. External URLs (`http://`, `https://`) open in the system browser.
 
 ## Dice pool interaction
 

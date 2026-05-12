@@ -6,9 +6,13 @@ A desktop application for managing **Vampire: The Masquerade V20** tabletop RPG 
 
 ## Features
 
-- **VTMD format** — extended Markdown for campaign documents (characters, chapters, modules, NPCs)
+- **VTMD format** — extended Markdown for campaign documents (PCs, NPCs, chapters, modules, campaigns)
+- **Folder tree browser** — visualise and navigate your campaign directory structure in the sidebar; colour-coded by document type
+- **Tab system** — open multiple documents simultaneously and switch between them; unsaved changes are tracked per tab
+- **File & directory creation** — create new VTMD files (with pre-populated templates) and folders directly from the sidebar
+- **Internal links** — link VTMD documents to each other with standard Markdown; clicking opens the target in a new tab
 - **Interactive campaign management** — blood pool tracking, dice rolls, secret reveals
-- **Offline-first** — all data stored as local files on your machine
+- **Offline-first** — all data stored as plain files on your machine; no server, no cloud
 - **Cross-platform** — macOS, Windows, Linux via Tauri
 
 ---
@@ -91,39 +95,33 @@ The compiled native app will be in `src-tauri/target/release/bundle/`.
 vtm-campaign-manager/
 ├── src/
 │   ├── domain/                        # Business logic — no framework dependencies
-│   │   ├── character/
-│   │   │   ├── models/                # Entities and value objects
-│   │   │   ├── usecases/              # One file per use case
-│   │   │   ├── services/
-│   │   │   └── CharacterBLC.ts        # Public facade for the UI
 │   │   ├── combat/
 │   │   │   ├── models/
 │   │   │   ├── usecases/
 │   │   │   ├── services/
 │   │   │   └── CombatBLC.ts
 │   │   └── campaign/
-│   │       ├── models/
-│   │       ├── usecases/
-│   │       ├── services/
-│   │       └── CampaignBLC.ts
+│   │       ├── models/                # FolderNode, FileEntry, VtmdDocument, VtmdType …
+│   │       ├── usecases/              # OpenVtmdFile, ListFolderTree, CreateVtmdFile, CreateDirectory …
+│   │       ├── services/              # VtmdParserService, VtmdTemplateService
+│   │       └── CampaignBLC.ts        # Public facade for the UI
 │   ├── infrastructure/
-│   │   ├── repositories/              # Tauri fs commands abstraction
-│   │   └── tauri/                     # Tauri invoke wrappers
+│   │   ├── repositories/              # Tauri fs abstraction
+│   │   └── tauri/                     # TauriClient — invoke wrappers
 │   └── ui/
-│       └── components/                # Lit web components
+│       └── components/
+│           ├── vtm-app.ts             # Root layout, tab coordination
+│           ├── vtm-sidebar.ts         # Folder tree, file/dir creation
+│           ├── vtm-tab-bar.ts         # Tab strip with dirty indicators
+│           ├── vtm-viewer.ts          # Document renderer + editor
+│           └── vtm-dice-tray.ts       # Dice pool builder
 ├── docs/
 │   └── vtmd/                          # VTMD format specification
 ├── .claude/
 │   └── commands/
 │       ├── feature.md                 # Agent workflow for features
-│       └── architecture.md            # Architecture reference for agents
-├── .tmp/                              # Temporary agent plan files (gitignored)
+│       └── architecture.md            # Architecture reference
 └── campaigns/                         # Your campaign data (VTMD files)
-    └── example/
-        ├── campaign.vtmd
-        ├── characters/
-        ├── npcs/
-        └── modules/
 ```
 
 ---

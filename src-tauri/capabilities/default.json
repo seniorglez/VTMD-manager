@@ -6,6 +6,8 @@
   "permissions": [
     "core:default",
     "dialog:allow-open",
+    "opener:allow-open-url",
+    "opener:allow-default-urls",
     {
       "identifier": "fs:allow-read-text-file",
       "allow": [
@@ -26,6 +28,15 @@
     },
     {
       "identifier": "fs:allow-write-text-file",
+      "allow": [
+        { "path": "$HOME/**" },
+        { "path": "$TEMP/**" },
+        { "path": "$DESKTOP/**" },
+        { "path": "$DOCUMENT/**" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-mkdir",
       "allow": [
         { "path": "$HOME/**" },
         { "path": "$TEMP/**" },

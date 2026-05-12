@@ -116,10 +116,9 @@ export class VtmApp extends LitElement {
 
   render() {
     return html`
-      <div class="layout">
+      <div class="layout" @vtmd-file-selected=${this.handleFileSelected}>
         <vtm-sidebar
           .blc=${this.campaignBlc}
-          @vtmd-file-selected=${this.handleFileSelected}
         ></vtm-sidebar>
 
         <div

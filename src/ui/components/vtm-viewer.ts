@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { unsafeHTML } from 'lit/directives/unsafe-html.js'
 import { CampaignBLC, VtmdError } from '../../domain/campaign/CampaignBLC'
+import { openUrl } from '@tauri-apps/plugin-opener'
 
 @customElement('vtm-viewer')
 export class VtmViewer extends LitElement {
@@ -241,6 +242,17 @@ export class VtmViewer extends LitElement {
       color: #6b5e4e;
       margin-top: 2px;
     }
+    /* ── Links ── */
+    article a {
+      color: #7a9fbf;
+      text-decoration: none;
+    }
+    article a:hover { text-decoration: underline; }
+    article a[href$=".vtmd"] {
+      color: #c8963a;
+      cursor: pointer;
+    }
+    article a[href$=".vtmd"]:hover { text-decoration: underline; }
     /* ── Dice-pool clickable elements ── */
     article [data-vtmd-dice] {
       cursor: pointer;
@@ -370,13 +382,59 @@ export class VtmViewer extends LitElement {
     this._emitDirty(this._hasUnsavedChanges)
   }
 
+  private _neutraliseExternalLinks(html: string): string {
+    return html.replace(
+      /href="(https?:\/\/[^"]+)"/g,
+      'data-external-href="$1" href="javascript:void(0)"',
+    )
+  }
+
+  private _resolveVtmdPath(href: string): string {
+    if (href.startsWith('/')) return href
+    const dir = this.currentPath.split('/').slice(0, -1).join('/')
+    const segments = (dir + '/' + href).split('/')
+    const resolved: string[] = []
+    for (const seg of segments) {
+      if (seg === '..') resolved.pop()
+      else if (seg !== '.') resolved.push(seg)
+    }
+    return resolved.join('/')
+  }
+
   private _onArticleClick(e: MouseEvent) {
-    const target = (e.composedPath() as Element[]).find(
+    const path = e.composedPath() as Element[]
+
+    const anchor = path.find(
+      el => el instanceof HTMLAnchorElement && el.getAttribute('href')?.endsWith('.vtmd')
+    ) as HTMLAnchorElement | undefined
+    if (anchor) {
+      e.preventDefault()
+      const resolved = this._resolveVtmdPath(anchor.getAttribute('href')!)
+      this.dispatchEvent(new CustomEvent('vtmd-file-selected', {
+        detail: resolved,
+        bubbles: true,
+        composed: true,
+      }))
+      return
+    }
+
+    const externalEl = path.find(
+      el => el instanceof HTMLElement && el.dataset['externalHref']
+    ) as HTMLElement | undefined
+    if (externalEl) {
+      e.preventDefault()
+      openUrl(externalEl.dataset['externalHref']!).catch(err =>
+        console.error('[vtm-viewer] openUrl failed:', err)
+      )
+      return
+    }
+
+    const diceEl = path.find(
       el => el instanceof HTMLElement && el.dataset['vtmdDice'] !== undefined
     ) as HTMLElement | undefined
-    if (!target) return
-    const value = parseInt(target.dataset['vtmdDice']!, 10)
-    const label = target.dataset['vtmdLabel'] ?? ''
+    if (!diceEl) return
+    const value = parseInt(diceEl.dataset['vtmdDice']!, 10)
+    const label = diceEl.dataset['vtmdLabel'] ?? ''
     this.dispatchEvent(new CustomEvent('vtm-add-dice', {
       detail: { label, value },
       bubbles: true,
@@ -436,7 +494,7 @@ export class VtmViewer extends LitElement {
               </details>` : ''}
           ` : ''}
           ${this.renderedHtml
-            ? html`<article @click=${this._onArticleClick}>${unsafeHTML(this.renderedHtml)}</article>`
+            ? html`<article @click=${this._onArticleClick}>${unsafeHTML(this._neutraliseExternalLinks(this.renderedHtml))}</article>`
             : this.currentPath
               ? html`<p class="empty">El fichero no tiene contenido aún. Pulsa ✏ Editar para empezar a escribir.</p>`
               : html`<p class="empty">Selecciona un fichero para visualizarlo.</p>`}

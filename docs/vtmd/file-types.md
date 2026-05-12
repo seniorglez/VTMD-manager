@@ -120,24 +120,42 @@ Abilities are best laid out using Markdown tables with `::ability` inline tags, 
 
 ## `vtmd:npc`
 
-A lightweight NPC entry — simpler than a full character sheet, intended for supporting cast referenced from chapters.
+A full NPC stat block. Identical structure to `vtmd:character` but uses `::npc-header` instead of `::character-header` and omits the experience section — NPCs don't accumulate XP.
 
 ```
 # vtmd:npc
 
-::npc-header[name="Marcus Valerius" clan="Ventrue" apparent-age=50 attitude="neutral"]
+::npc-header[name="Marcus Valerius" clan="Ventrue" generation=7 apparent-age=50 attitude="neutral"]
 
-## Description
+## Attributes
 
-A man of impeccable dress and glacial eyes. Four centuries of rule have made him neither cruel nor kind — only effective.
+::attributes[strength=2 dexterity=3 stamina=2 charisma=5 manipulation=5 appearance=4 perception=4 intelligence=4 wits=4]
 
-## Story Role
+## Abilities
 
-Prince of Chicago. The power against which all other powers are measured.
+| Talents | Skills | Knowledges |
+|---|---|---|
+| ::ability[name="Alertness" level=2] | ::ability[name="Etiquette" level=5] | ::ability[name="Finance" level=3] |
+| ::ability[name="Leadership" level=4] | ::ability[name="Melee" level=3] | ::ability[name="Law" level=4] |
+| ::ability[name="Subterfuge" level=4] | ::ability[name="Stealth" level=2] | ::ability[name="Politics" level=5] |
 
-## Secrets
+## Advantages
 
-::secret[He knows his ghoul daughter Elena broke the Masquerade. He is engineering a cover-up.]
+| Disciplines | Backgrounds | | Virtues | |
+|---|---|---|---|---|
+| ::discipline[name="Dominate" level=5] | Influence | ●●●●● | Conscience | ●●●●○ |
+| ::discipline[name="Fortitude" level=3] | Resources | ●●●●● | Self-Control | ●●●●● |
+| ::discipline[name="Presence" level=4] | Status | ●●●●● | Courage | ●●●○○ |
+
+## Trackers
+
+| Blood Pool | Willpower | Humanity |
+|---|---|---|
+| ::blood[current=20 max=20] | ::willpower[current=8 max=8] | ::morality[path="Humanity" rating=5] |
+
+## Health
+
+::health[bashing=0 lethal=0 aggravated=0]
 ```
 
 ---
