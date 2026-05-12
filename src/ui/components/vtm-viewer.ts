@@ -378,10 +378,10 @@ export class VtmViewer extends LitElement {
   }
 
   render() {
-    const hasContent = !!this.renderedHtml || !!this.errorMsg
+    const showToolbar = !!this.currentPath || !!this.errorMsg
 
     return html`
-      ${hasContent ? html`
+      ${showToolbar ? html`
         <div class="toolbar">
           ${this.editMode ? html`
             ${this._hasUnsavedChanges ? html`<span class="unsaved-dot" title="Cambios sin guardar"></span>` : ''}

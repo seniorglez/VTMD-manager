@@ -1,4 +1,5 @@
 import { TauriClient } from '../tauri/TauriClient'
+import { FolderNode } from '../../domain/campaign/models/FolderNode'
 
 export class CampaignRepository {
   constructor(private readonly client: TauriClient) {}
@@ -21,5 +22,9 @@ export class CampaignRepository {
 
   listVtmdFiles(folderPath: string): Promise<string[]> {
     return this.client.listVtmdFiles(folderPath)
+  }
+
+  listFolderTree(folderPath: string): Promise<FolderNode> {
+    return this.client.listFolderTree(folderPath)
   }
 }

@@ -28,3 +28,19 @@ Custom tags follow the syntax:
 ```
 
 All attributes use double-quoted strings. Order is not significant.
+
+## Inline tags
+
+Some tags are registered as both **block** and **inline** extensions. Block tags must occupy their own line. Inline tags can also appear inside Markdown table cells, enabling multi-column layouts:
+
+```markdown
+| Talents | Skills | Knowledges |
+|---|---|---|
+| ::ability[name="Alertness" level=3] | ::ability[name="Melee" level=4] | ::ability[name="Occult" level=2] |
+```
+
+Inline-capable tags: `::ability` `::discipline` `::blood` `::willpower` `::morality` `::roll` `::npc` `::secret` `::weakness` `::experience`
+
+## Dice pool interaction
+
+In the application, any element rendered from `::ability`, `::discipline`, or `::attributes` is **clickable**. Clicking it adds the stat's value to the active dice pool in the Dice Tray. Click multiple stats to build a combined pool before rolling.

@@ -294,6 +294,36 @@ Renders the Health track — all seven wound levels. Boxes are filled from the t
 
 ---
 
+## `::merit`
+
+Renders a single merit entry with name and dot rating. Inline-capable — can appear inside table cells. Not clickable for the dice pool.
+
+```
+::merit[name="Iron Will" level=3]
+```
+
+| Attribute | Required | Values |
+|---|---|---|
+| `name` | ✅ | Any string |
+| `level` | ✅ | Integer 1–5 |
+
+---
+
+## `::flaw`
+
+Renders a single flaw entry with name and dot rating. Inline-capable — can appear inside table cells. Not clickable for the dice pool.
+
+```
+::flaw[name="Dark Secret" level=2]
+```
+
+| Attribute | Required | Values |
+|---|---|---|
+| `name` | ✅ | Any string |
+| `level` | ✅ | Integer 1–5 |
+
+---
+
 ## `::merits`
 
 Renders the Merits block. Accepts any key as a merit name; keys are rendered in Title Case with spaces.

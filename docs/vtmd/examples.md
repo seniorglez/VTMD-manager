@@ -6,24 +6,81 @@ Annotated examples for each document type.
 
 ## Character Sheet
 
+A complete `vtmd:character` using the full tag set. Abilities use `::ability` inline inside a Markdown table for the 3-column layout. Clicking any stat in the app adds its value to the Dice Tray.
+
 ```
 # vtmd:character
 
 ::character-header[name="Viktor Kazakov" clan="Brujah" generation=9 nature="Rebel" demeanor="Survivor" player="Alex"]
 
+---
+
 ## Attributes
 
 ::attributes[strength=4 dexterity=3 stamina=3 charisma=2 manipulation=2 appearance=2 perception=3 intelligence=2 wits=3]
 
-## Disciplines
+---
 
-::discipline[name="Potence" level=2]
-::discipline[name="Celerity" level=1]
-::discipline[name="Presence" level=1]
+## Abilities
 
-## Blood Pool
+| Talents | Skills | Knowledges |
+|---|---|---|
+| ::ability[name="Alertness" level=2] | ::ability[name="Animal Ken" level=0] | ::ability[name="Academics" level=1] |
+| ::ability[name="Athletics" level=3] | ::ability[name="Crafts" level=0] | ::ability[name="Computer" level=0] |
+| ::ability[name="Brawl" level=4] | ::ability[name="Drive" level=2] | ::ability[name="Finance" level=0] |
+| ::ability[name="Dodge" level=3] | ::ability[name="Etiquette" level=1] | ::ability[name="Investigation" level=1] |
+| ::ability[name="Empathy" level=1] | ::ability[name="Firearms" level=1] | ::ability[name="Law" level=0] |
+| ::ability[name="Expression" level=0] | ::ability[name="Melee" level=3] | ::ability[name="Linguistics" level=1] |
+| ::ability[name="Intimidation" level=3] | ::ability[name="Performance" level=0] | ::ability[name="Medicine" level=0] |
+| ::ability[name="Leadership" level=2] | ::ability[name="Stealth" level=2] | ::ability[name="Occult" level=1] |
+| ::ability[name="Streetwise" level=3] | ::ability[name="Survival" level=1] | ::ability[name="Politics" level=1] |
+| ::ability[name="Subterfuge" level=2] | ::ability[name="Technology" level=0] | ::ability[name="Science" level=0] |
 
-::blood[current=8 max=10]
+---
+
+## Advantages
+
+| Disciplines | Backgrounds | | Virtues | |
+|---|---|---|---|---|
+| ::discipline[name="Potence" level=2] | Contacts | ●●●○○ | Conscience | ●●●○○ |
+| ::discipline[name="Celerity" level=1] | Resources | ●●○○○ | Self-Control | ●●●○○ |
+| ::discipline[name="Presence" level=1] | Status | ●○○○○ | Courage | ●●●●○ |
+
+---
+
+## Merits & Flaws
+
+| Merits | Flaws |
+|---|---|
+| ::merit[name="Iron Will" level=3] | ::flaw[name="Dark Secret" level=2] |
+
+---
+
+## Trackers
+
+| Blood Pool | Willpower | Humanity |
+|---|---|---|
+| ::blood[current=8 max=10] | ::willpower[current=7 max=7] | ::morality[path="Humanity" rating=6] |
+
+---
+
+## Health
+
+::health[bashing=0 lethal=0 aggravated=0]
+
+---
+
+## Weakness
+
+::weakness[Brujah cannot resist frenzy — all frenzy roll difficulties are increased by 2.]
+
+---
+
+## Experience
+
+::experience[total=30 spent=27]
+
+---
 
 ## Background
 

@@ -345,6 +345,46 @@ describe('inline tags in table cells', () => {
   })
 })
 
+describe('::merit tag', () => {
+  it('renders class, name and dots standalone', () => {
+    const html = parser.render('::merit[name="Iron Will" level=3]')
+    expect(html).toContain('class="vtmd-merit"')
+    expect(html).toContain('Iron Will')
+    expect(html).toContain('●●●○○')
+  })
+
+  it('does not contain data-vtmd-dice', () => {
+    const html = parser.render('::merit[name="Iron Will" level=3]')
+    expect(html).not.toContain('data-vtmd-dice')
+  })
+
+  it('renders inline inside a table cell', () => {
+    const html = parser.render('| H |\n|---|\n| ::merit[name="Iron Will" level=3] |')
+    expect(html).toContain('<td>')
+    expect(html).toContain('class="vtmd-merit"')
+  })
+})
+
+describe('::flaw tag', () => {
+  it('renders class, name and dots standalone', () => {
+    const html = parser.render('::flaw[name="Dark Secret" level=2]')
+    expect(html).toContain('class="vtmd-flaw"')
+    expect(html).toContain('Dark Secret')
+    expect(html).toContain('●●○○○')
+  })
+
+  it('does not contain data-vtmd-dice', () => {
+    const html = parser.render('::flaw[name="Dark Secret" level=2]')
+    expect(html).not.toContain('data-vtmd-dice')
+  })
+
+  it('renders inline inside a table cell', () => {
+    const html = parser.render('| H |\n|---|\n| ::flaw[name="Dark Secret" level=2] |')
+    expect(html).toContain('<td>')
+    expect(html).toContain('class="vtmd-flaw"')
+  })
+})
+
 describe('data-vtmd-dice attributes for dice pool', () => {
   it('::ability carries data-vtmd-dice and data-vtmd-label', () => {
     const html = parser.render('::ability[name="Alertness" level=3]')

@@ -2,11 +2,17 @@ import { Result, err } from 'neverthrow'
 import { OpenVtmdFileUseCase } from './usecases/OpenVtmdFileUseCase'
 import { OpenCampaignFolderUseCase } from './usecases/OpenCampaignFolderUseCase'
 import { SaveVtmdFileUseCase } from './usecases/SaveVtmdFileUseCase'
+import { ListFolderTreeUseCase } from './usecases/ListFolderTreeUseCase'
+import { CreateVtmdFileUseCase } from './usecases/CreateVtmdFileUseCase'
 import { VtmdParserService } from './services/VtmdParserService'
 import { VtmdDocument } from './models/VtmdDocument'
 import { VtmdError } from './models/VtmdError'
+import { VtmdType } from './models/VtmdType'
+import { FolderNode } from './models/FolderNode'
 
 export type { VtmdDocument } from './models/VtmdDocument'
+export type { FolderNode } from './models/FolderNode'
+export type { FileEntry } from './models/FileEntry'
 export { VtmdType } from './models/VtmdType'
 export { VtmdError } from './models/VtmdError'
 
@@ -16,6 +22,7 @@ interface CampaignRepositoryPort {
   writeFile(path: string, content: string): Promise<void>
   pickFolder(): Promise<string | null>
   listVtmdFiles(folderPath: string): Promise<string[]>
+  listFolderTree(folderPath: string): Promise<FolderNode>
 }
 
 export class CampaignBLC {
@@ -27,6 +34,8 @@ export class CampaignBLC {
     private readonly saveVtmdFile: SaveVtmdFileUseCase,
     private readonly parser: VtmdParserService,
     private readonly repo: CampaignRepositoryPort,
+    private readonly listFolderTreeUseCase: ListFolderTreeUseCase,
+    private readonly createVtmdFile: CreateVtmdFileUseCase,
   ) {}
 
   pickFile(): Promise<string | null> {
@@ -79,5 +88,17 @@ export class CampaignBLC {
       console.error(`[CampaignBLC.listFiles] folderPath="${folderPath}" → ${cause}`)
       throw cause
     }
+  }
+
+  listFolderTree(folderPath: string): Promise<FolderNode> {
+    return this.listFolderTreeUseCase.execute(folderPath)
+  }
+
+  createFile(
+    folderPath: string,
+    filename: string,
+    type: VtmdType,
+  ): Promise<Result<string, VtmdError>> {
+    return this.createVtmdFile.execute(folderPath, filename, type)
   }
 }
