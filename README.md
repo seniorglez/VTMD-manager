@@ -64,10 +64,10 @@ npm install
 ### 2. Run in development mode
 
 ```bash
-npm run dev
+npm run tauri dev
 ```
 
-This starts the Vite dev server and the Tauri window simultaneously with hot reload.
+This compiles the Rust backend and opens the native Tauri window with the Vite dev server and hot reload. The app requires Tauri to function — filesystem access, dialogs, and file watching are all native APIs.
 
 ### 3. Run tests
 
@@ -78,7 +78,7 @@ npm run test
 ### 4. Build for production
 
 ```bash
-npm run build
+npm run tauri build
 ```
 
 The compiled native app will be in `src-tauri/target/release/bundle/`.
