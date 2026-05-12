@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { readTextFile, readDir, writeTextFile } from '@tauri-apps/plugin-fs'
+import { readTextFile, readDir, writeTextFile, mkdir } from '@tauri-apps/plugin-fs'
 import { FolderNode } from '../../domain/campaign/models/FolderNode'
 import { FileEntry } from '../../domain/campaign/models/FileEntry'
 import { VtmdType } from '../../domain/campaign/models/VtmdType'
@@ -79,7 +79,7 @@ export class TauriClient {
         if (typeof entry.name !== 'string') continue
         if (entry.isDirectory) {
           children.push(await this.listFolderTree(`${folderPath}/${entry.name}`))
-        } else if (entry.name.endsWith('.vtmd')) {
+        } else if (entry.name.endsWith('.vtmd') && entry.name.replace(/\.vtmd$/, '')) {
           const path = `${folderPath}/${entry.name}`
           files.push({ path, type: await this._peekVtmdType(path) })
         }
@@ -88,6 +88,16 @@ export class TauriClient {
       return { name, path: folderPath, files, children }
     } catch (cause) {
       const msg = `[TauriClient.listFolderTree] folderPath="${folderPath}" → ${cause}`
+      console.error(msg, cause)
+      throw new Error(msg, { cause })
+    }
+  }
+
+  async createDirectory(path: string): Promise<void> {
+    try {
+      await mkdir(path)
+    } catch (cause) {
+      const msg = `[TauriClient.createDirectory] path="${path}" → ${cause}`
       console.error(msg, cause)
       throw new Error(msg, { cause })
     }

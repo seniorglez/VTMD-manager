@@ -27,4 +27,8 @@ export class CampaignRepository {
   listFolderTree(folderPath: string): Promise<FolderNode> {
     return this.client.listFolderTree(folderPath)
   }
+
+  createDirectory(path: string): Promise<void> {
+    return this.client.createDirectory(path)
+  }
 }

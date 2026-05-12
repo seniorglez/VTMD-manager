@@ -76,13 +76,18 @@ export class VtmSidebar extends LitElement {
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .dir-actions {
+      display: flex;
+      gap: 2px;
+      flex-shrink: 0;
+    }
     .add-btn {
       background: none;
       border: none;
       color: #5a4a3a;
       cursor: pointer;
-      font-size: 0.85rem;
-      padding: 0 2px;
+      font-size: 0.82rem;
+      padding: 1px 3px;
       line-height: 1;
       border-radius: 2px;
       flex-shrink: 0;
@@ -134,7 +139,27 @@ export class VtmSidebar extends LitElement {
       border-left: 2px solid #8b0000;
       border-radius: 2px;
     }
-    .create-form select,
+    .create-form select {
+      -webkit-appearance: none;
+      appearance: none;
+      background-color: #0f0f0f;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b5e4e'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 7px center;
+      border: 1px solid #3a2a2a;
+      color: #c8b8a2;
+      font-family: inherit;
+      font-size: 0.78rem;
+      padding: 4px 24px 4px 6px;
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+    .create-form select:focus { border-color: #8b0000; }
+    .create-form select option {
+      background-color: #0f0f0f;
+      color: #c8b8a2;
+    }
     .create-form input {
       background: #0f0f0f;
       border: 1px solid #3a2a2a;
@@ -145,7 +170,6 @@ export class VtmSidebar extends LitElement {
       border-radius: 2px;
       outline: none;
     }
-    .create-form select:focus,
     .create-form input:focus { border-color: #8b0000; }
     .form-actions {
       display: flex;
@@ -199,9 +223,11 @@ export class VtmSidebar extends LitElement {
   @state() private creating: string | null = null
   @state() private newFileName = ''
   @state() private newFileType: VtmdType = VtmdType.Chapter
+  @state() private creatingDir: string | null = null
+  @state() private newDirName = ''
   @state() private errorMsg = ''
   @state() private loading = false
-  @state() private creating_busy = false
+  @state() private creatingBusy = false
 
   private async handleSelectFolder() {
     this.errorMsg = ''
@@ -234,18 +260,27 @@ export class VtmSidebar extends LitElement {
 
   private openCreateForm(folderPath: string) {
     this.creating = folderPath
+    this.creatingDir = null
     this.newFileName = ''
     this.newFileType = VtmdType.Chapter
     if (!this.openDirs.has(folderPath)) this.toggleDir(folderPath)
   }
 
+  private openCreateDirForm(folderPath: string) {
+    this.creatingDir = folderPath
+    this.creating = null
+    this.newDirName = ''
+    if (!this.openDirs.has(folderPath)) this.toggleDir(folderPath)
+  }
+
   private cancelCreate() {
     this.creating = null
+    this.creatingDir = null
   }
 
   private async confirmCreate() {
     if (!this.creating || !this.newFileName.trim()) return
-    this.creating_busy = true
+    this.creatingBusy = true
     try {
       const result = await this.blc.createFile(this.creating, this.newFileName.trim(), this.newFileType)
       if (result.isOk()) {
@@ -259,7 +294,29 @@ export class VtmSidebar extends LitElement {
     } catch (e) {
       this.errorMsg = String(e)
     } finally {
-      this.creating_busy = false
+      this.creatingBusy = false
+    }
+  }
+
+  private async confirmCreateDir() {
+    if (!this.creatingDir || !this.newDirName.trim()) return
+    this.creatingBusy = true
+    try {
+      const result = await this.blc.createDirectory(this.creatingDir, this.newDirName.trim())
+      if (result.isOk()) {
+        const newPath = result.value
+        this.creatingDir = null
+        this.tree = await this.blc.listFolderTree(this.rootPath)
+        const next = new Set(this.openDirs)
+        next.add(newPath)
+        this.openDirs = next
+      } else {
+        this.errorMsg = `Error al crear carpeta: ${result.error}`
+      }
+    } catch (e) {
+      this.errorMsg = String(e)
+    } finally {
+      this.creatingBusy = false
     }
   }
 
@@ -291,11 +348,18 @@ export class VtmSidebar extends LitElement {
         <div class="dir-row" style="padding-left: ${indent + 6}px" @click=${() => this.toggleDir(node.path)}>
           <span class="dir-arrow">${isOpen ? '▼' : '▶'}</span>
           <span class="dir-name">${node.name}</span>
-          <button
-            class="add-btn"
-            title="Nuevo fichero"
-            @click=${(e: Event) => { e.stopPropagation(); this.openCreateForm(node.path) }}
-          >+</button>
+          <div class="dir-actions">
+            <button
+              class="add-btn"
+              title="Nuevo fichero"
+              @click=${(e: Event) => { e.stopPropagation(); this.openCreateForm(node.path) }}
+            >+</button>
+            <button
+              class="add-btn"
+              title="Nueva carpeta"
+              @click=${(e: Event) => { e.stopPropagation(); this.openCreateDirForm(node.path) }}
+            >📁</button>
+          </div>
         </div>
 
         ${this.creating === node.path ? html`
@@ -305,8 +369,8 @@ export class VtmSidebar extends LitElement {
               @change=${(e: Event) => { this.newFileType = (e.target as HTMLSelectElement).value as VtmdType }}
             >
               <option value=${VtmdType.Chapter}>Capítulo</option>
-              <option value=${VtmdType.Character}>Personaje</option>
-              <option value=${VtmdType.Npc}>PNJ</option>
+              <option value=${VtmdType.Character}>PC</option>
+              <option value=${VtmdType.Npc}>NPC</option>
               <option value=${VtmdType.Module}>Módulo</option>
               <option value=${VtmdType.Campaign}>Campaña</option>
             </select>
@@ -318,8 +382,25 @@ export class VtmSidebar extends LitElement {
               @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter') this.confirmCreate(); if (e.key === 'Escape') this.cancelCreate() }}
             />
             <div class="form-actions">
-              <button class="confirm-btn" ?disabled=${this.creating_busy || !this.newFileName.trim()} @click=${this.confirmCreate}>
-                ${this.creating_busy ? '…' : 'Crear'}
+              <button class="confirm-btn" ?disabled=${this.creatingBusy || !this.newFileName.trim()} @click=${this.confirmCreate}>
+                ${this.creatingBusy ? '…' : 'Crear'}
+              </button>
+              <button class="cancel-btn" @click=${this.cancelCreate}>Cancelar</button>
+            </div>
+          </div>` : ''}
+
+        ${this.creatingDir === node.path ? html`
+          <div class="create-form" style="margin-left: ${indent + 14}px">
+            <input
+              type="text"
+              placeholder="nombre-de-carpeta"
+              .value=${this.newDirName}
+              @input=${(e: Event) => { this.newDirName = (e.target as HTMLInputElement).value }}
+              @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter') this.confirmCreateDir(); if (e.key === 'Escape') this.cancelCreate() }}
+            />
+            <div class="form-actions">
+              <button class="confirm-btn" ?disabled=${this.creatingBusy || !this.newDirName.trim()} @click=${this.confirmCreateDir}>
+                ${this.creatingBusy ? '…' : 'Crear carpeta'}
               </button>
               <button class="cancel-btn" @click=${this.cancelCreate}>Cancelar</button>
             </div>

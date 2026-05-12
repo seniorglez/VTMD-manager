@@ -4,6 +4,7 @@ import { OpenCampaignFolderUseCase } from './usecases/OpenCampaignFolderUseCase'
 import { SaveVtmdFileUseCase } from './usecases/SaveVtmdFileUseCase'
 import { ListFolderTreeUseCase } from './usecases/ListFolderTreeUseCase'
 import { CreateVtmdFileUseCase } from './usecases/CreateVtmdFileUseCase'
+import { CreateDirectoryUseCase } from './usecases/CreateDirectoryUseCase'
 import { VtmdParserService } from './services/VtmdParserService'
 import { VtmdDocument } from './models/VtmdDocument'
 import { VtmdError } from './models/VtmdError'
@@ -23,6 +24,7 @@ interface CampaignRepositoryPort {
   pickFolder(): Promise<string | null>
   listVtmdFiles(folderPath: string): Promise<string[]>
   listFolderTree(folderPath: string): Promise<FolderNode>
+  createDirectory(path: string): Promise<void>
 }
 
 export class CampaignBLC {
@@ -36,6 +38,7 @@ export class CampaignBLC {
     private readonly repo: CampaignRepositoryPort,
     private readonly listFolderTreeUseCase: ListFolderTreeUseCase,
     private readonly createVtmdFile: CreateVtmdFileUseCase,
+    private readonly createDirectoryUseCase: CreateDirectoryUseCase,
   ) {}
 
   pickFile(): Promise<string | null> {
@@ -100,5 +103,9 @@ export class CampaignBLC {
     type: VtmdType,
   ): Promise<Result<string, VtmdError>> {
     return this.createVtmdFile.execute(folderPath, filename, type)
+  }
+
+  createDirectory(parentPath: string, name: string): Promise<Result<string, VtmdError>> {
+    return this.createDirectoryUseCase.execute(parentPath, name)
   }
 }

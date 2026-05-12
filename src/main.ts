@@ -7,6 +7,7 @@ import { OpenCampaignFolderUseCase } from './domain/campaign/usecases/OpenCampai
 import { SaveVtmdFileUseCase } from './domain/campaign/usecases/SaveVtmdFileUseCase'
 import { ListFolderTreeUseCase } from './domain/campaign/usecases/ListFolderTreeUseCase'
 import { CreateVtmdFileUseCase } from './domain/campaign/usecases/CreateVtmdFileUseCase'
+import { CreateDirectoryUseCase } from './domain/campaign/usecases/CreateDirectoryUseCase'
 import { CampaignBLC } from './domain/campaign/CampaignBLC'
 import { DiceRollerService } from './domain/combat/services/DiceRollerService'
 import { RollDiceUseCase } from './domain/combat/usecases/RollDiceUseCase'
@@ -22,6 +23,7 @@ const openCampaignFolder = new OpenCampaignFolderUseCase(campaignRepository)
 const saveVtmdFile = new SaveVtmdFileUseCase(campaignRepository)
 const listFolderTree = new ListFolderTreeUseCase(campaignRepository)
 const createVtmdFile = new CreateVtmdFileUseCase(campaignRepository, templateService)
+const createDirectory = new CreateDirectoryUseCase(campaignRepository)
 const campaignBLC = new CampaignBLC(
   openVtmdFile,
   openCampaignFolder,
@@ -30,6 +32,7 @@ const campaignBLC = new CampaignBLC(
   campaignRepository,
   listFolderTree,
   createVtmdFile,
+  createDirectory,
 )
 
 const diceRollerService = new DiceRollerService()

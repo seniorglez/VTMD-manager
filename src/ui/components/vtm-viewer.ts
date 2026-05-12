@@ -323,6 +323,14 @@ export class VtmViewer extends LitElement {
     }
   }
 
+  private _emitDirty(dirty: boolean) {
+    this.dispatchEvent(new CustomEvent('vtm-dirty-changed', {
+      detail: { path: this.currentPath, dirty },
+      bubbles: true,
+      composed: true,
+    }))
+  }
+
   private _enterEdit() {
     this.editMode = true
     this.saveError = ''
@@ -332,6 +340,7 @@ export class VtmViewer extends LitElement {
     this.draftContent = this.originalContent
     this.editMode = false
     this.saveError = ''
+    this._emitDirty(false)
   }
 
   private async _save() {
@@ -345,6 +354,7 @@ export class VtmViewer extends LitElement {
           this.originalContent = this.draftContent
           this.renderedHtml = this.blc.renderRaw(this.draftContent)
           this.editMode = false
+          this._emitDirty(false)
         },
         () => {
           this.saveError = `Error al guardar: ${this.blc.lastError || 'causa desconocida'}`
@@ -357,6 +367,7 @@ export class VtmViewer extends LitElement {
 
   private _onInput(e: Event) {
     this.draftContent = (e.target as HTMLTextAreaElement).value
+    this._emitDirty(this._hasUnsavedChanges)
   }
 
   private _onArticleClick(e: MouseEvent) {
@@ -426,7 +437,9 @@ export class VtmViewer extends LitElement {
           ` : ''}
           ${this.renderedHtml
             ? html`<article @click=${this._onArticleClick}>${unsafeHTML(this.renderedHtml)}</article>`
-            : html`<p class="empty">Selecciona un fichero para visualizarlo.</p>`}
+            : this.currentPath
+              ? html`<p class="empty">El fichero no tiene contenido aún. Pulsa ✏ Editar para empezar a escribir.</p>`
+              : html`<p class="empty">Selecciona un fichero para visualizarlo.</p>`}
         </div>
       `}
     `
