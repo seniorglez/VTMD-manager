@@ -2,16 +2,19 @@ import { LitElement, html, css } from 'lit'
 import { customElement, property, state, query, queryAll } from 'lit/decorators.js'
 import { CampaignBLC } from '../../domain/campaign/CampaignBLC'
 import { CombatBLC } from '../../domain/combat/CombatBLC'
+import { UpdaterBLC } from '../../domain/updater/UpdaterBLC'
 import { VtmSidebar } from './vtm-sidebar'
 import { VtmViewer } from './vtm-viewer'
 import { VtmDiceTray } from './vtm-dice-tray'
 import { VtmTabBar, TabEntry } from './vtm-tab-bar'
+import { VtmUpdateNotifier } from './vtm-update-notifier'
 
 @customElement('vtm-app')
 export class VtmApp extends LitElement {
   static styles = css`
     :host {
       display: flex;
+      flex-direction: column;
       height: 100vh;
       overflow: hidden;
       background: #0f0f0f;
@@ -58,6 +61,7 @@ export class VtmApp extends LitElement {
 
   @property({ attribute: false }) declare campaignBlc: CampaignBLC
   @property({ attribute: false }) declare combatBlc: CombatBLC
+  @property({ attribute: false }) declare updaterBlc: UpdaterBLC
 
   @state() private tabs: TabEntry[] = []
   @state() private activeTab = ''
@@ -116,6 +120,7 @@ export class VtmApp extends LitElement {
 
   render() {
     return html`
+      <vtm-update-notifier .blc=${this.updaterBlc}></vtm-update-notifier>
       <div class="layout" @vtmd-file-selected=${this.handleFileSelected}>
         <vtm-sidebar
           .blc=${this.campaignBlc}
@@ -156,4 +161,4 @@ export class VtmApp extends LitElement {
 }
 
 // Suppress unused import warnings — these imports register the custom elements
-export { VtmSidebar, VtmViewer, VtmDiceTray, VtmTabBar }
+export { VtmSidebar, VtmViewer, VtmDiceTray, VtmTabBar, VtmUpdateNotifier }
