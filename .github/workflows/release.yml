@@ -75,5 +75,4 @@ jobs:
           releaseName: v${{ needs.check-version.outputs.version }}
           releaseDraft: false
           prerelease: false
-          updaterJsonEnabled: true
-          updaterJsonPreferUniversal: true
+          includeUpdaterJson: true
