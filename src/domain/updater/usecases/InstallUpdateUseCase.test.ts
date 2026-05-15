@@ -4,9 +4,9 @@ import { UpdaterService } from '../services/UpdaterService'
 import { UpdaterError } from '../models/UpdaterError'
 
 const mockService = {
-  check: vi.fn<() => Promise<null>>(),
-  hasPendingUpdate: vi.fn<() => boolean>(),
-  install: vi.fn<() => Promise<void>>(),
+  check: vi.fn(),
+  hasPendingUpdate: vi.fn(),
+  install: vi.fn(),
 }
 
 describe('InstallUpdateUseCase', () => {

@@ -31,19 +31,19 @@ export class VtmUpdateNotifier extends LitElement {
   `
 
   @property({ attribute: false }) declare blc: UpdaterBLC
-  @state() private declare update: UpdateInfo | null
+  @state() private declare availableUpdate: UpdateInfo | null
   @state() private installing = false
 
   override connectedCallback() {
     super.connectedCallback()
-    this.update = null
+    this.availableUpdate = null
     this._check()
   }
 
   private async _check() {
     const result = await this.blc.checkForUpdates()
     result.match(
-      (info) => { this.update = info },
+      (info) => { this.availableUpdate = info },
       () => {},
     )
   }
@@ -55,10 +55,10 @@ export class VtmUpdateNotifier extends LitElement {
   }
 
   render() {
-    if (!this.update) return html``
+    if (!this.availableUpdate) return html``
     return html`
       <div class="banner">
-        <span>Nueva versión disponible: v${this.update.version}</span>
+        <span>Nueva versión disponible: v${this.availableUpdate.version}</span>
         <button @click=${this._install} ?disabled=${this.installing}>
           ${this.installing ? 'Instalando…' : 'Actualizar y reiniciar'}
         </button>

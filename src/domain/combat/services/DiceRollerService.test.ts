@@ -6,7 +6,7 @@ function withRolls(...values: number[]): DiceRollerService {
   return new DiceRollerService(() => {
     const { value } = iter.next()
     // random() returns 0–0.999..., so we map value 1–10 back: (value-1)/10
-    return (value - 1) / 10
+    return (value! - 1) / 10
   })
 }
 
