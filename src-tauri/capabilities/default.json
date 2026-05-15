@@ -6,7 +6,6 @@
   "permissions": [
     "core:default",
     "updater:default",
-    "process:allow-relaunch",
     "dialog:allow-open",
     "opener:allow-open-url",
     "opener:allow-default-urls",

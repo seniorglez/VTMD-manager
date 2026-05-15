@@ -1,5 +1,4 @@
 import { check, Update } from '@tauri-apps/plugin-updater'
-import { relaunch } from '@tauri-apps/plugin-process'
 import { UpdateInfo } from '../../domain/updater/models/UpdateInfo'
 
 export class UpdaterRepository {
@@ -19,6 +18,6 @@ export class UpdaterRepository {
   async install(): Promise<void> {
     if (!this.pendingUpdate) throw new Error('No pending update')
     await this.pendingUpdate.downloadAndInstall()
-    await relaunch()
+    // The update is applied on next launch — caller is responsible for prompting restart
   }
 }

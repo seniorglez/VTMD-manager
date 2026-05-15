@@ -33,6 +33,7 @@ export class VtmUpdateNotifier extends LitElement {
   @property({ attribute: false }) declare blc: UpdaterBLC
   @state() private declare availableUpdate: UpdateInfo | null
   @state() private installing = false
+  @state() private installed = false
 
   override connectedCallback() {
     super.connectedCallback()
@@ -52,15 +53,21 @@ export class VtmUpdateNotifier extends LitElement {
     this.installing = true
     await this.blc.installUpdate()
     this.installing = false
+    this.installed = true
   }
 
   render() {
     if (!this.availableUpdate) return html``
+    if (this.installed) return html`
+      <div class="banner">
+        <span>Actualización instalada — reinicia la app para aplicarla</span>
+      </div>
+    `
     return html`
       <div class="banner">
         <span>Nueva versión disponible: v${this.availableUpdate.version}</span>
         <button @click=${this._install} ?disabled=${this.installing}>
-          ${this.installing ? 'Instalando…' : 'Actualizar y reiniciar'}
+          ${this.installing ? 'Instalando…' : 'Instalar actualización'}
         </button>
       </div>
     `
