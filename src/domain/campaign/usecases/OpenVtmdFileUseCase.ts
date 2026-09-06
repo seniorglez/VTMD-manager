@@ -9,6 +9,7 @@ const TYPE_MAP: Record<string, VtmdType> = {
   chapter: VtmdType.Chapter,
   module: VtmdType.Module,
   campaign: VtmdType.Campaign,
+  map: VtmdType.Map,
 }
 
 export class OpenVtmdFileUseCase {

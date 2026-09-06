@@ -13,6 +13,8 @@ export class VtmdTemplateService {
         return `# vtmd:module\n\n`
       case VtmdType.Campaign:
         return `# vtmd:campaign\n\n`
+      case VtmdType.Map:
+        return `# vtmd:map\n\n::map[svg="" name="Nuevo mapa"]\n`
     }
   }
 }

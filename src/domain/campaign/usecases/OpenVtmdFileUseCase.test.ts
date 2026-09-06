@@ -43,6 +43,12 @@ describe('OpenVtmdFileUseCase', () => {
     result.map(doc => expect(doc.type).toBe(VtmdType.Module))
   })
 
+  it('valid vtmd:map returns ok with Map type', () => {
+    const result = useCase.execute('# vtmd:map\n\n::map[svg="chicago.svg"]', '/map.vtmd')
+    expect(result.isOk()).toBe(true)
+    result.map(doc => expect(doc.type).toBe(VtmdType.Map))
+  })
+
   it('empty file returns err UnknownType', () => {
     const result = useCase.execute('', '/empty.vtmd')
     expect(result.isErr()).toBe(true)

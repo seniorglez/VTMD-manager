@@ -5,15 +5,20 @@ import { SaveVtmdFileUseCase } from './usecases/SaveVtmdFileUseCase'
 import { ListFolderTreeUseCase } from './usecases/ListFolderTreeUseCase'
 import { CreateVtmdFileUseCase } from './usecases/CreateVtmdFileUseCase'
 import { CreateDirectoryUseCase } from './usecases/CreateDirectoryUseCase'
+import { ParseCampaignMapUseCase } from './usecases/ParseCampaignMapUseCase'
 import { VtmdParserService } from './services/VtmdParserService'
 import { VtmdDocument } from './models/VtmdDocument'
 import { VtmdError } from './models/VtmdError'
 import { VtmdType } from './models/VtmdType'
 import { FolderNode } from './models/FolderNode'
+import { CampaignMap } from './models/CampaignMap'
 
 export type { VtmdDocument } from './models/VtmdDocument'
 export type { FolderNode } from './models/FolderNode'
 export type { FileEntry } from './models/FileEntry'
+export type { CampaignMap } from './models/CampaignMap'
+export type { MapArea } from './models/MapArea'
+export type { Point } from './models/Point'
 export { VtmdType } from './models/VtmdType'
 export { VtmdError } from './models/VtmdError'
 
@@ -39,6 +44,7 @@ export class CampaignBLC {
     private readonly listFolderTreeUseCase: ListFolderTreeUseCase,
     private readonly createVtmdFile: CreateVtmdFileUseCase,
     private readonly createDirectoryUseCase: CreateDirectoryUseCase,
+    private readonly parseCampaignMap: ParseCampaignMapUseCase,
   ) {}
 
   pickFile(): Promise<string | null> {
@@ -107,5 +113,17 @@ export class CampaignBLC {
 
   createDirectory(parentPath: string, name: string): Promise<Result<string, VtmdError>> {
     return this.createDirectoryUseCase.execute(parentPath, name)
+  }
+
+  parseMap(doc: VtmdDocument): Result<CampaignMap, VtmdError> {
+    return this.parseCampaignMap.execute(doc)
+  }
+
+  readAsset(path: string): Promise<string> {
+    return this.repo.readFile(path)
+  }
+
+  async saveAsset(path: string, content: string): Promise<Result<void, VtmdError>> {
+    return this.saveVtmdFile.execute(path, content)
   }
 }

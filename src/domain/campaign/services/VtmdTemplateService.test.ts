@@ -38,4 +38,10 @@ describe('VtmdTemplateService', () => {
   it('campaign template first line is # vtmd:campaign', () => {
     expect(service.getTemplate(VtmdType.Campaign).split('\n')[0]).toBe('# vtmd:campaign')
   })
+
+  it('map template first line is # vtmd:map and contains a ::map tag', () => {
+    const template = service.getTemplate(VtmdType.Map)
+    expect(template.split('\n')[0]).toBe('# vtmd:map')
+    expect(template).toContain('::map[')
+  })
 })

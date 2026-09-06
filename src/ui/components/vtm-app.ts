@@ -3,11 +3,13 @@ import { customElement, property, state, query, queryAll } from 'lit/decorators.
 import { CampaignBLC } from '../../domain/campaign/CampaignBLC'
 import { CombatBLC } from '../../domain/combat/CombatBLC'
 import { UpdaterBLC } from '../../domain/updater/UpdaterBLC'
+import { MapImportBLC } from '../../domain/mapimport/MapImportBLC'
 import { VtmSidebar } from './vtm-sidebar'
 import { VtmViewer } from './vtm-viewer'
 import { VtmDiceTray } from './vtm-dice-tray'
 import { VtmTabBar, TabEntry } from './vtm-tab-bar'
 import { VtmUpdateNotifier } from './vtm-update-notifier'
+import { VtmMapImport } from './vtm-map-import'
 
 @customElement('vtm-app')
 export class VtmApp extends LitElement {
@@ -62,10 +64,12 @@ export class VtmApp extends LitElement {
   @property({ attribute: false }) declare campaignBlc: CampaignBLC
   @property({ attribute: false }) declare combatBlc: CombatBLC
   @property({ attribute: false }) declare updaterBlc: UpdaterBLC
+  @property({ attribute: false }) declare mapImportBlc: MapImportBLC
 
   @state() private tabs: TabEntry[] = []
   @state() private activeTab = ''
   @state() private dirtyTabs = new Set<string>()
+  @state() private mapImportFolder: string | null = null
 
   @query('vtm-dice-tray') private diceTray!: VtmDiceTray
   @queryAll('vtm-viewer') private viewers!: NodeListOf<VtmViewer>
@@ -74,8 +78,7 @@ export class VtmApp extends LitElement {
     return Array.from(this.viewers).find(v => v.dataset['path'] === path)
   }
 
-  private async handleFileSelected(e: Event) {
-    const path = (e as CustomEvent<string>).detail
+  private async _openFileAsTab(path: string) {
     const exists = this.tabs.some(t => t.path === path)
     if (!exists) {
       const label = path.split('/').pop()?.replace(/\.vtmd$/, '') ?? path
@@ -86,6 +89,23 @@ export class VtmApp extends LitElement {
     if (!exists) {
       this._viewerFor(path)?.load(path)
     }
+  }
+
+  private handleFileSelected(e: Event) {
+    return this._openFileAsTab((e as CustomEvent<string>).detail)
+  }
+
+  private handleOpenMapImport(e: Event) {
+    this.mapImportFolder = (e as CustomEvent<string>).detail
+  }
+
+  private handleMapImportClose() {
+    this.mapImportFolder = null
+  }
+
+  private handleMapSaved(e: Event) {
+    this.mapImportFolder = null
+    return this._openFileAsTab((e as CustomEvent<string>).detail)
   }
 
   private handleTabActivate(e: Event) {
@@ -121,7 +141,11 @@ export class VtmApp extends LitElement {
   render() {
     return html`
       <vtm-update-notifier .blc=${this.updaterBlc}></vtm-update-notifier>
-      <div class="layout" @vtmd-file-selected=${this.handleFileSelected}>
+      <div
+        class="layout"
+        @vtmd-file-selected=${this.handleFileSelected}
+        @open-map-import=${this.handleOpenMapImport}
+      >
         <vtm-sidebar
           .blc=${this.campaignBlc}
         ></vtm-sidebar>
@@ -156,9 +180,19 @@ export class VtmApp extends LitElement {
           <vtm-dice-tray .blc=${this.combatBlc}></vtm-dice-tray>
         </div>
       </div>
+
+      ${this.mapImportFolder ? html`
+        <vtm-map-import
+          .campaignBlc=${this.campaignBlc}
+          .mapImportBlc=${this.mapImportBlc}
+          .folderPath=${this.mapImportFolder}
+          @map-import-close=${this.handleMapImportClose}
+          @map-saved=${this.handleMapSaved}
+        ></vtm-map-import>
+      ` : ''}
     `
   }
 }
 
 // Suppress unused import warnings — these imports register the custom elements
-export { VtmSidebar, VtmViewer, VtmDiceTray, VtmTabBar, VtmUpdateNotifier }
+export { VtmSidebar, VtmViewer, VtmDiceTray, VtmTabBar, VtmUpdateNotifier, VtmMapImport }

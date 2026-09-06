@@ -10,6 +10,10 @@
     "opener:allow-open-url",
     "opener:allow-default-urls",
     {
+      "identifier": "http:default",
+      "allow": [{ "url": "https://overpass-api.de/*" }]
+    },
+    {
       "identifier": "fs:allow-read-text-file",
       "allow": [
         { "path": "$HOME/**" },

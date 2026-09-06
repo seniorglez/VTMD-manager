@@ -1,17 +1,8 @@
 import { Marked } from 'marked'
+import { parseVtmdAttrs, VtmdAttrs } from './parseVtmdAttrs'
 
-type Attrs = Record<string, string>
+type Attrs = VtmdAttrs
 type RenderFn = (attrs: Attrs, raw: string) => string
-
-function parseAttrs(raw: string): Attrs {
-  const attrs: Attrs = {}
-  const re = /([\w-]+)=(?:"([^"]*)"|([\w.]+))/g
-  let m: RegExpExecArray | null
-  while ((m = re.exec(raw)) !== null) {
-    attrs[m[1]!] = m[2] !== undefined ? m[2] : (m[3] ?? '')
-  }
-  return attrs
-}
 
 function dots(level: number): string {
   const clamped = Math.max(0, Math.min(5, level))
@@ -218,7 +209,7 @@ function makeBlockExt(tag: string, render: RenderFn) {
     start: (src: string) => src.indexOf(`::${tag}[`),
     tokenizer(src: string) {
       const m = src.match(new RegExp(`^::${tag}\\[([^\\]]*)\\]`))
-      if (m) return { type: `vtmd-${tag}`, raw: m[0]!, attrs: parseAttrs(m[1]!), rawContent: m[1]! }
+      if (m) return { type: `vtmd-${tag}`, raw: m[0]!, attrs: parseVtmdAttrs(m[1]!), rawContent: m[1]! }
     },
     renderer(token: any) { return render(token.attrs as Attrs, token.rawContent as string) },
   }
@@ -231,7 +222,7 @@ function makeInlineExt(tag: string, render: RenderFn) {
     start: (src: string) => src.indexOf(`::${tag}[`),
     tokenizer(src: string) {
       const m = src.match(new RegExp(`^::${tag}\\[([^\\]]*)\\]`))
-      if (m) return { type: `vtmd-${tag}-inline`, raw: m[0]!, attrs: parseAttrs(m[1]!), rawContent: m[1]! }
+      if (m) return { type: `vtmd-${tag}-inline`, raw: m[0]!, attrs: parseVtmdAttrs(m[1]!), rawContent: m[1]! }
     },
     renderer(token: any) { return render(token.attrs as Attrs, token.rawContent as string) },
   }

@@ -1,8 +1,10 @@
 import { LitElement, html, css } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { unsafeHTML } from 'lit/directives/unsafe-html.js'
-import { CampaignBLC, VtmdError } from '../../domain/campaign/CampaignBLC'
+import { CampaignBLC, VtmdError, VtmdType, CampaignMap } from '../../domain/campaign/CampaignBLC'
 import { openUrl } from '@tauri-apps/plugin-opener'
+import { resolveRelativePath } from './resolvePath'
+import { VtmMapViewer } from './vtm-map-viewer'
 
 @customElement('vtm-viewer')
 export class VtmViewer extends LitElement {
@@ -59,6 +61,10 @@ export class VtmViewer extends LitElement {
       overflow-y: auto;
       padding: 32px 40px;
       color: #c8b8a2;
+    }
+    vtm-map-viewer {
+      flex: 1;
+      min-height: 0;
     }
     /* ── Edit area ── */
     .editor-area {
@@ -287,6 +293,8 @@ export class VtmViewer extends LitElement {
   @state() private currentPath = ''
   @state() private saving = false
   @state() private saveError = ''
+  @state() private mapData: CampaignMap | null = null
+  @state() private mapSvg = ''
 
   private _onKeyDown = (e: KeyboardEvent) => {
     if (e.key === 's' && (e.ctrlKey || e.metaKey) && this.editMode) {
@@ -305,28 +313,53 @@ export class VtmViewer extends LitElement {
     document.removeEventListener('keydown', this._onKeyDown)
   }
 
+  private async _loadMapAsset(mapDocPath: string, map: CampaignMap): Promise<void> {
+    if (!map.svgPath) return
+    try {
+      this.mapSvg = await this.blc.readAsset(resolveRelativePath(mapDocPath, map.svgPath))
+    } catch (e) {
+      this.errorMsg = 'No se pudo cargar la imagen del mapa'
+      this.errorDetail = String(e)
+    }
+  }
+
   async load(path: string): Promise<void> {
     this.errorMsg = ''
     this.errorDetail = ''
     this.loading = true
     this.editMode = false
     this.saveError = ''
+    this.mapData = null
+    this.mapSvg = ''
     try {
       const result = await this.blc.openFile(path)
-      result.match(
-        doc => {
-          this.renderedHtml = this.blc.render(doc)
-          this.draftContent = doc.rawContent
-          this.originalContent = doc.rawContent
-          this.currentPath = path
-        },
-        error => {
-          this.errorMsg = error === VtmdError.UnknownType
-            ? 'Tipo de fichero no reconocido'
-            : 'Error al leer el fichero'
-          this.errorDetail = `VtmdError: ${error}\npath: ${path}\ncausa: ${this.blc.lastError || '(desconocida)'}`
-        },
-      )
+      if (result.isErr()) {
+        const error = result.error
+        this.errorMsg = error === VtmdError.UnknownType
+          ? 'Tipo de fichero no reconocido'
+          : 'Error al leer el fichero'
+        this.errorDetail = `VtmdError: ${error}\npath: ${path}\ncausa: ${this.blc.lastError || '(desconocida)'}`
+        return
+      }
+
+      const doc = result.value
+      this.draftContent = doc.rawContent
+      this.originalContent = doc.rawContent
+      this.currentPath = path
+
+      if (doc.type === VtmdType.Map) {
+        const mapResult = this.blc.parseMap(doc)
+        if (mapResult.isErr()) {
+          this.errorMsg = 'El fichero de mapa no es válido'
+          this.errorDetail = `VtmdError: ${mapResult.error}\npath: ${path}`
+          return
+        }
+        this.mapData = mapResult.value
+        this.renderedHtml = ''
+        await this._loadMapAsset(path, this.mapData)
+      } else {
+        this.renderedHtml = this.blc.render(doc)
+      }
     } catch (e) {
       this.errorMsg = 'Error inesperado al cargar el fichero'
       this.errorDetail = String(e)
@@ -364,9 +397,29 @@ export class VtmViewer extends LitElement {
       result.match(
         () => {
           this.originalContent = this.draftContent
-          this.renderedHtml = this.blc.renderRaw(this.draftContent)
           this.editMode = false
           this._emitDirty(false)
+          if (this.mapData) {
+            const body = this.draftContent.split('\n').slice(1).join('\n').trimStart()
+            const mapResult = this.blc.parseMap({
+              type: VtmdType.Map,
+              body,
+              filePath: this.currentPath,
+              rawContent: this.draftContent,
+            })
+            mapResult.match(
+              map => {
+                this.mapData = map
+                this._loadMapAsset(this.currentPath, map)
+              },
+              error => {
+                this.errorMsg = 'El fichero de mapa no es válido'
+                this.errorDetail = `VtmdError: ${error}`
+              },
+            )
+          } else {
+            this.renderedHtml = this.blc.renderRaw(this.draftContent)
+          }
         },
         () => {
           this.saveError = `Error al guardar: ${this.blc.lastError || 'causa desconocida'}`
@@ -389,18 +442,6 @@ export class VtmViewer extends LitElement {
     )
   }
 
-  private _resolveVtmdPath(href: string): string {
-    if (href.startsWith('/')) return href
-    const dir = this.currentPath.split('/').slice(0, -1).join('/')
-    const segments = (dir + '/' + href).split('/')
-    const resolved: string[] = []
-    for (const seg of segments) {
-      if (seg === '..') resolved.pop()
-      else if (seg !== '.') resolved.push(seg)
-    }
-    return resolved.join('/')
-  }
-
   private _onArticleClick(e: MouseEvent) {
     const path = e.composedPath() as Element[]
 
@@ -409,7 +450,7 @@ export class VtmViewer extends LitElement {
     ) as HTMLAnchorElement | undefined
     if (anchor) {
       e.preventDefault()
-      const resolved = this._resolveVtmdPath(anchor.getAttribute('href')!)
+      const resolved = resolveRelativePath(this.currentPath, anchor.getAttribute('href')!)
       this.dispatchEvent(new CustomEvent('vtmd-file-selected', {
         detail: resolved,
         bubbles: true,
@@ -482,6 +523,12 @@ export class VtmViewer extends LitElement {
             </div>
           </div>
         </div>
+      ` : this.mapData && !this.errorMsg && !this.loading ? html`
+        <vtm-map-viewer
+          .svgMarkup=${this.mapSvg}
+          .areas=${this.mapData.areas}
+          .basePath=${this.currentPath}
+        ></vtm-map-viewer>
       ` : html`
         <div class="content-area">
           ${this.loading ? html`<p class="loading">Cargando…</p>` : ''}
@@ -503,3 +550,6 @@ export class VtmViewer extends LitElement {
     `
   }
 }
+
+// Suppress unused import warnings — this import registers the custom element
+export { VtmMapViewer }

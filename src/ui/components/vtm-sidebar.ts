@@ -128,6 +128,7 @@ export class VtmSidebar extends LitElement {
     .type-chapter   { background: #1a3a6b; }
     .type-module    { background: #6b3a1a; }
     .type-campaign  { background: #6b1a1a; }
+    .type-map       { background: #1a5a6b; }
     .type-unknown   { background: #3a3a3a; }
     .create-form {
       display: flex;
@@ -251,6 +252,12 @@ export class VtmSidebar extends LitElement {
     )
   }
 
+  private openMapImport(folderPath: string) {
+    this.dispatchEvent(
+      new CustomEvent<string>('open-map-import', { detail: folderPath, bubbles: true, composed: true }),
+    )
+  }
+
   private toggleDir(path: string) {
     const next = new Set(this.openDirs)
     if (next.has(path)) next.delete(path)
@@ -359,6 +366,11 @@ export class VtmSidebar extends LitElement {
               title="Nueva carpeta"
               @click=${(e: Event) => { e.stopPropagation(); this.openCreateDirForm(node.path) }}
             >📁</button>
+            <button
+              class="add-btn"
+              title="Importar mapa aquí"
+              @click=${(e: Event) => { e.stopPropagation(); this.openMapImport(node.path) }}
+            >🗺️</button>
           </div>
         </div>
 
@@ -373,6 +385,7 @@ export class VtmSidebar extends LitElement {
               <option value=${VtmdType.Npc}>NPC</option>
               <option value=${VtmdType.Module}>Módulo</option>
               <option value=${VtmdType.Campaign}>Campaña</option>
+              <option value=${VtmdType.Map}>Mapa</option>
             </select>
             <input
               type="text"

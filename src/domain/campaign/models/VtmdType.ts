@@ -4,4 +4,5 @@ export enum VtmdType {
   Chapter = 'chapter',
   Module = 'module',
   Campaign = 'campaign',
+  Map = 'map',
 }
