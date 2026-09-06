@@ -1,8 +1,9 @@
-import { LitElement, html, css } from 'lit'
+import { LitElement, html, css, svg } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js'
 import { ref, createRef, Ref } from 'lit/directives/ref.js'
-import { MapArea } from '../../domain/campaign/CampaignBLC'
+import { styleMap } from 'lit/directives/style-map.js'
+import { MapArea, LegendEntry } from '../../domain/campaign/CampaignBLC'
 import { resolveRelativePath } from './resolvePath'
 
 interface ViewBox {
@@ -27,6 +28,7 @@ function parseViewBox(attr: string | null): ViewBox {
 export class VtmMapViewer extends LitElement {
   static styles = css`
     :host {
+      position: relative;
       display: flex;
       overflow: hidden;
       background: #1a1a1a;
@@ -40,10 +42,6 @@ export class VtmMapViewer extends LitElement {
     .viewer.dragging { cursor: grabbing; }
     svg { width: 100%; height: 100%; display: block; background: #ffffff; }
     .zone {
-      fill: #8b0000;
-      fill-opacity: 0;
-      stroke: #8b0000;
-      stroke-opacity: 0;
       stroke-width: 2;
       transition: fill-opacity 0.1s, stroke-opacity 0.1s;
       cursor: pointer;
@@ -51,10 +49,6 @@ export class VtmMapViewer extends LitElement {
     }
     .zone.linked { cursor: pointer; }
     .zone.unlinked { cursor: default; }
-    .zone:hover, .zone.hovered {
-      fill-opacity: 0.25;
-      stroke-opacity: 0.9;
-    }
     .empty {
       margin: auto;
       color: #6b5e4e;
@@ -94,10 +88,36 @@ export class VtmMapViewer extends LitElement {
       border-radius: 2px;
     }
     .choice-popover button:hover { background: #222; }
+    .legend-panel {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      background: rgba(22, 22, 22, 0.9);
+      border: 1px solid #2a2a2a;
+      border-radius: 3px;
+      padding: 8px 10px;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 0.78rem;
+      color: #c8b8a2;
+      pointer-events: none;
+    }
+    .legend-panel .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 2px 0;
+    }
+    .legend-panel .legend-swatch {
+      width: 11px;
+      height: 11px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
   `
 
   @property({ attribute: false }) declare svgMarkup: string
   @property({ attribute: false }) declare areas: MapArea[]
+  @property({ attribute: false }) declare legend: LegendEntry[]
   @property() declare basePath: string
 
   @state() private viewBox: ViewBox = DEFAULT_VIEW_BOX
@@ -186,6 +206,19 @@ export class VtmMapViewer extends LitElement {
     return area.points.map(p => `${p.x},${p.y}`).join(' ')
   }
 
+  private _colorFor(area: MapArea): string {
+    const categoryColor = area.category
+      ? (this.legend ?? []).find(l => l.id === area.category)?.color
+      : undefined
+    return categoryColor ?? '#8b0000'
+  }
+
+  private _opacityFor(area: MapArea, isHovered: boolean): { fill: string; stroke: string } {
+    if (isHovered) return { fill: '0.45', stroke: '1' }
+    if (area.category) return { fill: '0.28', stroke: '0.85' }
+    return { fill: '0', stroke: '0' }
+  }
+
   private _onAreaClick(area: MapArea, e: MouseEvent) {
     if (area.linkedEntityIds.length === 0) return
     if (area.linkedEntityIds.length === 1) {
@@ -228,21 +261,41 @@ export class VtmMapViewer extends LitElement {
         @wheel=${this._onWheel}
         @click=${() => { this.choiceArea = null }}
       >
+        ${svg`
         <svg viewBox="${vb.minX} ${vb.minY} ${vb.width} ${vb.height}" preserveAspectRatio="xMidYMid meet">
           <g transform="translate(${this.panX} ${this.panY}) scale(${this.zoom})">
             <g class="basemap">${unsafeSVG(this.innerMarkup)}</g>
-            ${(this.areas ?? []).map((area, i) => html`
+            ${(this.areas ?? []).map((area, i) => {
+              const isHovered = this.hoveredIndex === i
+              const opacity = this._opacityFor(area, isHovered)
+              return svg`
               <polygon
-                class="zone ${area.linkedEntityIds.length > 0 ? 'linked' : 'unlinked'} ${this.hoveredIndex === i ? 'hovered' : ''}"
+                class="zone ${area.linkedEntityIds.length > 0 ? 'linked' : 'unlinked'}"
                 points=${this._pointsAttr(area)}
+                fill=${this._colorFor(area)}
+                fill-opacity=${opacity.fill}
+                stroke=${this._colorFor(area)}
+                stroke-opacity=${opacity.stroke}
                 @pointerenter=${() => { this.hoveredIndex = i }}
                 @pointerleave=${() => { this.hoveredIndex = null }}
                 @click=${(e: MouseEvent) => { e.stopPropagation(); this._onAreaClick(area, e) }}
               ><title>${area.name}</title></polygon>
-            `)}
+            `
+            })}
           </g>
         </svg>
+        `}
       </div>
+      ${(this.legend ?? []).length > 0 ? html`
+        <div class="legend-panel">
+          ${this.legend.map(entry => html`
+            <div class="legend-row">
+              <span class="legend-swatch" style=${styleMap({ background: entry.color })}></span>
+              <span>${entry.label}</span>
+            </div>
+          `)}
+        </div>
+      ` : ''}
       ${this.choiceArea ? html`
         <div class="choice-popover" style="left:${this.choicePos.x}px; top:${this.choicePos.y}px">
           <div class="choice-title">${this.choiceArea.name}</div>

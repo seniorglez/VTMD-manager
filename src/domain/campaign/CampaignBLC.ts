@@ -19,6 +19,7 @@ export type { FileEntry } from './models/FileEntry'
 export type { CampaignMap } from './models/CampaignMap'
 export type { MapArea } from './models/MapArea'
 export type { Point } from './models/Point'
+export type { LegendEntry } from './models/LegendEntry'
 export { VtmdType } from './models/VtmdType'
 export { VtmdError } from './models/VtmdError'
 

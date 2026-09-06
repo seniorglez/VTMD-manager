@@ -527,6 +527,7 @@ export class VtmViewer extends LitElement {
         <vtm-map-viewer
           .svgMarkup=${this.mapSvg}
           .areas=${this.mapData.areas}
+          .legend=${this.mapData.legend}
           .basePath=${this.currentPath}
         ></vtm-map-viewer>
       ` : html`

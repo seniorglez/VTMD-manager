@@ -4,4 +4,5 @@ export interface MapArea {
   name: string
   points: Point[]
   linkedEntityIds: string[]
+  category?: string
 }
