@@ -114,6 +114,15 @@ export class VtmViewer extends LitElement {
       padding: 24px 32px;
       color: #c8b8a2;
     }
+    .map-draft-error {
+      flex-shrink: 0;
+      margin: 0;
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      color: #c0392b;
+      background: #1a0000;
+      border-bottom: 1px solid #2a2a2a;
+    }
     /* ── State messages ── */
     p.error { color: #c0392b; margin-bottom: 8px; }
     p.loading { color: #6b5e4e; font-style: italic; }
@@ -295,6 +304,9 @@ export class VtmViewer extends LitElement {
   @state() private saveError = ''
   @state() private mapData: CampaignMap | null = null
   @state() private mapSvg = ''
+  @state() private draftMapData: CampaignMap | null = null
+  @state() private mapDraftError = ''
+  private _loadedSvgPath = ''
 
   private _onKeyDown = (e: KeyboardEvent) => {
     if (e.key === 's' && (e.ctrlKey || e.metaKey) && this.editMode) {
@@ -315,12 +327,38 @@ export class VtmViewer extends LitElement {
 
   private async _loadMapAsset(mapDocPath: string, map: CampaignMap): Promise<void> {
     if (!map.svgPath) return
+    const resolved = resolveRelativePath(mapDocPath, map.svgPath)
     try {
-      this.mapSvg = await this.blc.readAsset(resolveRelativePath(mapDocPath, map.svgPath))
+      this.mapSvg = await this.blc.readAsset(resolved)
+      this._loadedSvgPath = resolved
     } catch (e) {
       this.errorMsg = 'No se pudo cargar la imagen del mapa'
       this.errorDetail = String(e)
     }
+  }
+
+  private _reparseMapDraft(): void {
+    if (!this.mapData || !this.currentPath) return
+    const body = this.draftContent.split('\n').slice(1).join('\n').trimStart()
+    const result = this.blc.parseMap({
+      type: VtmdType.Map,
+      body,
+      filePath: this.currentPath,
+      rawContent: this.draftContent,
+    })
+    result.match(
+      map => {
+        this.mapDraftError = ''
+        this.draftMapData = map
+        const resolvedSvgPath = map.svgPath ? resolveRelativePath(this.currentPath, map.svgPath) : ''
+        if (resolvedSvgPath && resolvedSvgPath !== this._loadedSvgPath) {
+          this._loadMapAsset(this.currentPath, map)
+        }
+      },
+      error => {
+        this.mapDraftError = `Sintaxis de mapa inválida (${error}) — se muestra la última versión válida.`
+      },
+    )
   }
 
   async load(path: string): Promise<void> {
@@ -331,6 +369,9 @@ export class VtmViewer extends LitElement {
     this.saveError = ''
     this.mapData = null
     this.mapSvg = ''
+    this.draftMapData = null
+    this.mapDraftError = ''
+    this._loadedSvgPath = ''
     try {
       const result = await this.blc.openFile(path)
       if (result.isErr()) {
@@ -379,12 +420,16 @@ export class VtmViewer extends LitElement {
   private _enterEdit() {
     this.editMode = true
     this.saveError = ''
+    this.draftMapData = this.mapData
+    this.mapDraftError = ''
   }
 
   private _discard() {
     this.draftContent = this.originalContent
     this.editMode = false
     this.saveError = ''
+    this.draftMapData = this.mapData
+    this.mapDraftError = ''
     this._emitDirty(false)
   }
 
@@ -410,6 +455,8 @@ export class VtmViewer extends LitElement {
             mapResult.match(
               map => {
                 this.mapData = map
+                this.draftMapData = map
+                this.mapDraftError = ''
                 this._loadMapAsset(this.currentPath, map)
               },
               error => {
@@ -433,6 +480,7 @@ export class VtmViewer extends LitElement {
   private _onInput(e: Event) {
     this.draftContent = (e.target as HTMLTextAreaElement).value
     this._emitDirty(this._hasUnsavedChanges)
+    if (this.mapData) this._reparseMapDraft()
   }
 
   private _neutraliseExternalLinks(html: string): string {
@@ -518,9 +566,19 @@ export class VtmViewer extends LitElement {
           </div>
           <div class="preview-pane">
             <div class="editor-pane-label">Vista previa</div>
-            <div class="preview-scroll">
-              <article>${unsafeHTML(this.blc.renderRaw(this.draftContent))}</article>
-            </div>
+            ${this.mapData ? html`
+              ${this.mapDraftError ? html`<p class="map-draft-error">${this.mapDraftError}</p>` : ''}
+              <vtm-map-viewer
+                .svgMarkup=${this.mapSvg}
+                .areas=${this.draftMapData?.areas ?? []}
+                .legend=${this.draftMapData?.legend ?? []}
+                .basePath=${this.currentPath}
+              ></vtm-map-viewer>
+            ` : html`
+              <div class="preview-scroll">
+                <article>${unsafeHTML(this.blc.renderRaw(this.draftContent))}</article>
+              </div>
+            `}
           </div>
         </div>
       ` : this.mapData && !this.errorMsg && !this.loading ? html`
