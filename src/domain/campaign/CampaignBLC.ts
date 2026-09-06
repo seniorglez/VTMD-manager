@@ -31,6 +31,8 @@ interface CampaignRepositoryPort {
   listVtmdFiles(folderPath: string): Promise<string[]>
   listFolderTree(folderPath: string): Promise<FolderNode>
   createDirectory(path: string): Promise<void>
+  saveLastFolder(path: string): Promise<void>
+  loadLastFolder(): Promise<string | null>
 }
 
 export class CampaignBLC {
@@ -126,5 +128,13 @@ export class CampaignBLC {
 
   async saveAsset(path: string, content: string): Promise<Result<void, VtmdError>> {
     return this.saveVtmdFile.execute(path, content)
+  }
+
+  saveLastFolder(path: string): Promise<void> {
+    return this.repo.saveLastFolder(path)
+  }
+
+  loadLastFolder(): Promise<string | null> {
+    return this.repo.loadLastFolder()
   }
 }

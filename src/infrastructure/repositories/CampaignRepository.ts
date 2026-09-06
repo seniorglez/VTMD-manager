@@ -31,4 +31,12 @@ export class CampaignRepository {
   createDirectory(path: string): Promise<void> {
     return this.client.createDirectory(path)
   }
+
+  saveLastFolder(path: string): Promise<void> {
+    return this.client.saveLastFolder(path)
+  }
+
+  loadLastFolder(): Promise<string | null> {
+    return this.client.loadLastFolder()
+  }
 }

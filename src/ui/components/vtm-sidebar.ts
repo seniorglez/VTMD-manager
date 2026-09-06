@@ -230,15 +230,37 @@ export class VtmSidebar extends LitElement {
   @state() private loading = false
   @state() private creatingBusy = false
 
+  connectedCallback() {
+    super.connectedCallback()
+    this._openLastFolder()
+  }
+
+  private async _openLastFolder() {
+    try {
+      const lastFolder = await this.blc.loadLastFolder()
+      if (!lastFolder) return
+      await this._openFolder(lastFolder)
+    } catch {
+      // Stale/missing remembered folder — fall back to the empty state silently.
+      this.rootPath = ''
+      this.tree = null
+    }
+  }
+
+  private async _openFolder(folder: string) {
+    this.rootPath = folder
+    this.tree = await this.blc.listFolderTree(folder)
+    this.openDirs = new Set([folder])
+  }
+
   private async handleSelectFolder() {
     this.errorMsg = ''
     this.loading = true
     try {
       const folder = await this.blc.pickFolder()
       if (!folder) return
-      this.rootPath = folder
-      this.tree = await this.blc.listFolderTree(folder)
-      this.openDirs = new Set([folder])
+      await this._openFolder(folder)
+      this.blc.saveLastFolder(folder).catch(() => {})
     } catch (e) {
       this.errorMsg = String(e)
     } finally {

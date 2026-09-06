@@ -9,6 +9,8 @@
     "dialog:allow-open",
     "opener:allow-open-url",
     "opener:allow-default-urls",
+    "fs:allow-appconfig-read-recursive",
+    "fs:allow-appconfig-write-recursive",
     {
       "identifier": "http:default",
       "allow": [{ "url": "https://overpass-api.de/*" }]

@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core'
-import { readTextFile, readDir, writeTextFile, mkdir } from '@tauri-apps/plugin-fs'
+import { appConfigDir } from '@tauri-apps/api/path'
+import { readTextFile, readDir, writeTextFile, mkdir, exists } from '@tauri-apps/plugin-fs'
 import { FolderNode } from '../../domain/campaign/models/FolderNode'
 import { FileEntry } from '../../domain/campaign/models/FileEntry'
 import { VtmdType } from '../../domain/campaign/models/VtmdType'
@@ -100,6 +101,31 @@ export class TauriClient {
       const msg = `[TauriClient.createDirectory] path="${path}" → ${cause}`
       console.error(msg, cause)
       throw new Error(msg, { cause })
+    }
+  }
+
+  async saveLastFolder(path: string): Promise<void> {
+    try {
+      const dir = await appConfigDir()
+      await mkdir(dir, { recursive: true })
+      await writeTextFile(`${dir}/last-folder.txt`, path)
+    } catch (cause) {
+      const msg = `[TauriClient.saveLastFolder] path="${path}" → ${cause}`
+      console.error(msg, cause)
+      throw new Error(msg, { cause })
+    }
+  }
+
+  async loadLastFolder(): Promise<string | null> {
+    try {
+      const dir = await appConfigDir()
+      const filePath = `${dir}/last-folder.txt`
+      if (!(await exists(filePath))) return null
+      const content = await readTextFile(filePath)
+      return content.trim() || null
+    } catch (cause) {
+      console.error(`[TauriClient.loadLastFolder] → ${cause}`)
+      return null
     }
   }
 
